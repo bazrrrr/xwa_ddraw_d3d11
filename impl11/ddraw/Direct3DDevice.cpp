@@ -555,7 +555,6 @@ HRESULT Direct3DDevice::Execute(
 	DumpExecuteBuffer(executeBuffer);
 #endif
 
-	auto& device = this->_deviceResources->_d3dDevice;
 	auto& context = this->_deviceResources->_d3dDeviceContext;
 
 	HRESULT hr = S_OK;

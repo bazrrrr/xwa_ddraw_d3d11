@@ -382,6 +382,8 @@ HRESULT Direct3DTexture::Load(
 				case DXGI_ERROR_INVALID_CALL:
 					s << "invalid call ";
 					break;
+				default:
+					s << reason;
 				}
 				s << reason << " " << _com_error(reason).ErrorMessage();
 				MessageBox(nullptr, s.str().c_str(), __FUNCTION__, MB_ICONERROR);

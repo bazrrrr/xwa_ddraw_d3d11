@@ -110,7 +110,7 @@ Config::Config()
 				continue;
 			}
 
-			int pos = line.find("=");
+			int pos = line.find('=');
 
 			std::string name = line.substr(0, pos);
 			name.erase(remove_if(name.begin(), name.end(), isspace_wrapper), name.end());

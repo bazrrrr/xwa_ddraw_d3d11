@@ -3,9 +3,9 @@
 class DirectDrawPalette : public IDirectDrawPalette
 {
 public:
-	DirectDrawPalette();
+	DirectDrawPalette() : _refCount(1), palette() {}
 
-	virtual ~DirectDrawPalette();
+	virtual ~DirectDrawPalette() = default;
 
 	/*** IUnknown methods ***/
 

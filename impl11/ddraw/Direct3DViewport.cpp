@@ -6,7 +6,8 @@
 #include "Direct3DMaterial.h"
 #include "Direct3DViewport.h"
 
-Direct3DViewport::Direct3DViewport(DeviceResources* deviceResources)
+Direct3DViewport::Direct3DViewport(DeviceResources* deviceResources) :
+   clearColor{}
 {
 	this->_refCount = 1;
 	this->_deviceResources = deviceResources;

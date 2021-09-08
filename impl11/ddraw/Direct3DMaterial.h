@@ -3,6 +3,7 @@
 class Direct3DMaterial : public IDirect3DMaterial
 {
 public:
+	constexpr Direct3DMaterial() : material(), _refCount(1) {}
 	virtual ~Direct3DMaterial() {}
 	/*** IUnknown methods ***/
 

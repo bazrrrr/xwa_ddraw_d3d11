@@ -1,15 +1,6 @@
 #include "common.h"
 #include "DirectDrawPalette.h"
 
-DirectDrawPalette::DirectDrawPalette()
-{
-	this->_refCount = 1;
-}
-
-DirectDrawPalette::~DirectDrawPalette()
-{
-}
-
 HRESULT DirectDrawPalette::QueryInterface(
 	REFIID riid,
 	LPVOID* obp

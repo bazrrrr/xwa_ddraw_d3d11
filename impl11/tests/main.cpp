@@ -473,7 +473,7 @@ void main()
 	DDCOLORKEY colorkey;
 	DDBLTFX ddBltFx;
 
-#define CALL(fct) std::cout << #fct << std::endl; if(FAILED(hr = (fct))) { std::cout << (void*)hr << ": " << _com_error(hr).ErrorMessage() << std::endl; return; }
+#define CALL(fct) do { std::cout << #fct << std::endl; if(FAILED(hr = (fct))) { std::cout << (void*)hr << ": " << _com_error(hr).ErrorMessage() << std::endl; return; } } while (false)
 
 	ComPtr<IDirectDraw> ddraw;
 	CALL(DirectDrawCreate(nullptr, &ddraw, nullptr));

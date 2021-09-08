@@ -19,6 +19,7 @@ BackbufferSurface::BackbufferSurface(DeviceResources* deviceResources)
 	this->_buffer = new char[this->_bufferSize];
 	memset(this->_buffer, 0, this->_bufferSize);
 	this->_lockCount = 0;
+	this->sawSrcCopy = false;
 }
 
 BackbufferSurface::~BackbufferSurface()
