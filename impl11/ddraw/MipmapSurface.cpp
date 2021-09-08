@@ -747,20 +747,6 @@ HRESULT MipmapSurface::Unlock(
 	if (this->_mipmapCount == 1)
 	{
 		this->_surface->_d3dTexture->Load(this->_surface->_d3dTexture);
-
-		if (this->_surface->_buffer != nullptr)
-		{
-			delete[] this->_surface->_buffer;
-			this->_surface->_buffer = nullptr;
-			this->_surface->_bufferSize = 0;
-			this->_surface->_width = 0;
-			this->_surface->_height = 0;
-
-			this->_buffer = nullptr;
-			this->_bufferSize = 0;
-			this->_width = 0;
-			this->_height = 0;
-		}
 	}
 
 	return DD_OK;

@@ -803,15 +803,6 @@ HRESULT TextureSurface::Unlock(
 	if (this->_pixelFormat.dwRGBBitCount == 32 && this->_mipmapCount == 1)
 	{
 		this->_d3dTexture->Load(this->_d3dTexture);
-
-		if (this->_buffer != nullptr)
-		{
-			delete[] this->_buffer;
-			this->_buffer = nullptr;
-			this->_bufferSize = 0;
-			this->_width = 0;
-			this->_height = 0;
-		}
 	}
 
 	return DD_OK;
