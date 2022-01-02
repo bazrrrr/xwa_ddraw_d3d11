@@ -1,196 +1,70 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Fichiers sources">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Fichiers d%27en-tête">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
-    <Filter Include="Fichiers de ressources">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
+    <ClCompile Include="BackbufferSurface.cpp" />
+    <ClCompile Include="config.cpp" />
+    <ClCompile Include="ddraw.cpp" />
+    <ClCompile Include="DepthSurface.cpp" />
+    <ClCompile Include="DeviceResources.cpp" />
+    <ClCompile Include="Direct3D.cpp" />
+    <ClCompile Include="Direct3DDevice.cpp" />
+    <ClCompile Include="Direct3DExecuteBuffer.cpp" />
+    <ClCompile Include="Direct3DMaterial.cpp" />
+    <ClCompile Include="Direct3DTexture.cpp" />
+    <ClCompile Include="Direct3DViewport.cpp" />
+    <ClCompile Include="DirectDraw.cpp" />
+    <ClCompile Include="DirectDraw2.cpp" />
+    <ClCompile Include="DirectDrawPalette.cpp" />
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="ExecuteBufferDumper.cpp" />
+    <ClCompile Include="FrontbufferSurface.cpp" />
+    <ClCompile Include="joystick.cpp" />
+    <ClCompile Include="logger.cpp" />
+    <ClCompile Include="MipmapSurface.cpp" />
+    <ClCompile Include="OffscreenSurface.cpp" />
+    <ClCompile Include="PrimarySurface.cpp" />
+    <ClCompile Include="TextureSurface.cpp" />
+    <ClCompile Include="utils.cpp" />
+    <ClCompile Include="XwaDrawBracketHook.cpp" />
+    <ClCompile Include="XwaDrawRadarHook.cpp" />
+    <ClCompile Include="XwaDrawTextHook.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="ddraw.def">
-      <Filter>Fichiers sources</Filter>
-    </None>
+    <ClInclude Include="BackbufferSurface.h" />
+    <ClInclude Include="common.h" />
+    <ClInclude Include="ComPtr.h" />
+    <ClInclude Include="config.h" />
+    <ClInclude Include="DepthSurface.h" />
+    <ClInclude Include="DeviceResources.h" />
+    <ClInclude Include="Direct3D.h" />
+    <ClInclude Include="Direct3DDevice.h" />
+    <ClInclude Include="Direct3DExecuteBuffer.h" />
+    <ClInclude Include="Direct3DMaterial.h" />
+    <ClInclude Include="Direct3DTexture.h" />
+    <ClInclude Include="Direct3DViewport.h" />
+    <ClInclude Include="DirectDraw.h" />
+    <ClInclude Include="DirectDraw2.h" />
+    <ClInclude Include="DirectDrawPalette.h" />
+    <ClInclude Include="ExecuteBufferDumper.h" />
+    <ClInclude Include="FrontbufferSurface.h" />
+    <ClInclude Include="joystick.h" />
+    <ClInclude Include="logger.h" />
+    <ClInclude Include="MipmapSurface.h" />
+    <ClInclude Include="OffscreenSurface.h" />
+    <ClInclude Include="PrimarySurface.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="TextureSurface.h" />
+    <ClInclude Include="utils.h" />
+    <ClInclude Include="XwaDrawBracketHook.h" />
+    <ClInclude Include="XwaDrawRadarHook.h" />
+    <ClInclude Include="XwaDrawTextHook.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ddraw.rc" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="ddraw.cfg" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="BackbufferSurface.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="config.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="ddraw.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="DepthSurface.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="DeviceResources.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Direct3D.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Direct3DDevice.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Direct3DExecuteBuffer.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Direct3DTexture.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Direct3DViewport.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="DirectDraw.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="DirectDraw2.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="dllmain.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="ExecuteBufferDumper.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="FrontbufferSurface.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="logger.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="MipmapSurface.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="OffscreenSurface.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="PrimarySurface.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="TextureSurface.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="utils.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Direct3DMaterial.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="DirectDrawPalette.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="joystick.cpp">
-    <ClCompile Include="XwaDrawTextHook.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="XwaDrawRadarHook.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="XwaDrawBracketHook.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="BackbufferSurface.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="common.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="ComPtr.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="config.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="DepthSurface.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="DeviceResources.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="Direct3D.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="Direct3DDevice.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="Direct3DExecuteBuffer.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="Direct3DTexture.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="Direct3DViewport.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="DirectDraw.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="DirectDraw2.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="ExecuteBufferDumper.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="FrontbufferSurface.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="logger.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="MipmapSurface.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="OffscreenSurface.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="PrimarySurface.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="targetver.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="TextureSurface.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="utils.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="Direct3DMaterial.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="DirectDrawPalette.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="joystick.h">
-    <ClInclude Include="XwaDrawTextHook.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="XwaDrawRadarHook.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="XwaDrawBracketHook.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="ddraw.rc">
-      <Filter>Fichiers de ressources</Filter>
-    </ResourceCompile>
+    <None Include="ddraw.def" />
   </ItemGroup>
 </Project>
