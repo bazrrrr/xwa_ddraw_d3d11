@@ -14,6 +14,7 @@ public:
 	void runAutopatch();
 
 	bool AspectRatioPreserved;
+	bool RemapMouse;
 	bool MultisamplingAntialiasingEnabled;
 	bool AnisotropicFilteringEnabled;
 	int GenerateMipMaps;

@@ -655,6 +655,31 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 			ReleaseCapture();
 			return DefWindowProc(hWnd, Msg, wParam, lParam);
 		}
+		if (g_config.RemapMouse)
+		{
+			static const int native_w = 640;
+			static const int native_h = 480;
+			if (g_config.AspectRatioPreserved)
+			{
+				if (native_w * r.right <= native_h * r.bottom)
+				{
+					int new_bottom = r.right * native_h / native_w;
+					y -= (r.bottom - new_bottom) / 2;
+					if (y < 0) y = 0;
+					r.bottom = new_bottom;
+				}
+				else
+				{
+					int new_right = r.bottom * native_w / native_h;
+					x -= (r.right - new_right) / 2;
+					if (x < 0) x = 0;
+					r.right = new_right;
+				}
+			}
+			x = x * native_w / r.right;
+			y = y * native_h / r.bottom;
+			lParam = x + ((unsigned)y << 16);
+		}
 	}
 	return savedWndProc(hWnd, Msg, wParam, lParam);
 }
@@ -729,6 +754,12 @@ HRESULT DirectDraw::SetCooperativeLevel(
 		if (oldWndProc != (LONG)WndProc) savedWndProc = (WNDPROC)oldWndProc;
 		SetWindowLong(hWnd, GWL_WNDPROC, (LONG)WndProc);
 		SetWindowPos(hWnd, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+	}
+	else if (g_config.RemapMouse && hWnd != nullptr)
+	{
+		LONG oldWndProc = GetWindowLong(hWnd, GWL_WNDPROC);
+		if (oldWndProc != (LONG)WndProc) savedWndProc = (WNDPROC)oldWndProc;
+		SetWindowLong(hWnd, GWL_WNDPROC, (LONG)WndProc);
 	}
 
 #if LOGGER

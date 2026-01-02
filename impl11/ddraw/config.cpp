@@ -38,6 +38,7 @@ Config g_config;
 Config::Config()
 {
 	this->AspectRatioPreserved = true;
+	this->RemapMouse = false;
 	this->MultisamplingAntialiasingEnabled = false;
 	this->AnisotropicFilteringEnabled = true;
 	this->GenerateMipMaps = -1;
@@ -126,6 +127,10 @@ Config::Config()
 			if (name == "PreserveAspectRatio")
 			{
 				this->AspectRatioPreserved = stoi(value) != 0;
+			}
+			else if (name == "RemapMouse")
+			{
+				this->RemapMouse = stoi(value) != 0;
 			}
 			else if (name == "EnableMultisamplingAntialiasing")
 			{
