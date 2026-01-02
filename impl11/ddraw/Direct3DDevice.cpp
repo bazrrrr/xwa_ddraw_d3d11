@@ -517,8 +517,8 @@ void Direct3DDevice::UpdatePixelShader(ID3D11DeviceContext *context, Direct3DTex
 		// causing flicker and holes e.g. in the rear of the A-Wing in XWA (most visible from the side).
 		if (texture->_surface->_pixelFormat.dwRGBAlphaBitMask == 0) pixelShader = this->_deviceResources->_pixelShaderAtest565;
 		// On the other hand, XvT relies on this behaviour for laser "explosions"...
-		// TODO: might this be a unsupported color key ssue??
-		if (g_config.isXvT && texture->_surface->_pixelFormat.dwRGBAlphaBitMask == 0) pixelShader = this->_deviceResources->_pixelShaderAtestDiscardBlack;
+		if (g_config.isXvT && texture->_surface->_pixelFormat.dwRGBAlphaBitMask == 0 &&
+		    texture->_surface->hasColorKey) pixelShader = this->_deviceResources->_pixelShaderAtestDiscardBlack;
 	}
 
 	this->_deviceResources->InitPixelShader(pixelShader);

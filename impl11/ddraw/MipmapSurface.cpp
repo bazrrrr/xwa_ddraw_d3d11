@@ -694,7 +694,7 @@ HRESULT MipmapSurface::SetColorKey(
 	LogText(str.str());
 #endif
 
-	return DDERR_UNSUPPORTED;
+	return this->_surface->SetColorKey(dwFlags, lpDDColorKey);
 }
 
 HRESULT MipmapSurface::SetOverlayPosition(
