@@ -25,7 +25,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       with:
         name: shaders
-        path: ${{github.workspace}}/build/shaders/*.h
+        path: ${{github.workspace}}/build/*.h
 
     - name: Test
       run: ctest -VV --test-dir ${{github.workspace}}/build
