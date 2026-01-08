@@ -458,12 +458,13 @@ HRESULT create_texture()
 	if(FAILED(hr = (fct))) \
 									{ \
 		std::cout << "\t* failed " << (void*)hr << ": " << _com_error(hr).ErrorMessage() << std::endl; \
+		return 1; \
 									} else { \
 		std::cout << "\t* passed" << std::endl; \
 	} \
 }
 
-void main()
+int main()
 {
 	setlocale(LC_ALL, "");
 
@@ -473,7 +474,7 @@ void main()
 	DDCOLORKEY colorkey;
 	DDBLTFX ddBltFx;
 
-#define CALL(fct) do { std::cout << #fct << std::endl; if(FAILED(hr = (fct))) { std::cout << (void*)hr << ": " << _com_error(hr).ErrorMessage() << std::endl; return; } } while (false)
+#define CALL(fct) do { std::cout << #fct << std::endl; if(FAILED(hr = (fct))) { std::cout << (void*)hr << ": " << _com_error(hr).ErrorMessage() << std::endl; return 1; } } while (false)
 
 	ComPtr<IDirectDraw> ddraw;
 	CALL(DirectDrawCreate(nullptr, &ddraw, nullptr));
@@ -566,4 +567,5 @@ void main()
 	RUN_TEST(create_viewport());
 	RUN_TEST(execute_buffer_exit());
 	RUN_TEST(create_texture());
+	return 0;
 }
