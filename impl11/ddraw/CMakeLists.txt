@@ -48,7 +48,11 @@ set(ddraw_headers
 
 add_library(ddraw SHARED ${ddraw_sources})
 set_property(TARGET ddraw PROPERTY CXX_STANDARD 20)
+set_property(TARGET ddraw PROPERTY PREFIX "")
 add_dependencies(ddraw shaders)
 target_include_directories(ddraw PRIVATE ${CMAKE_BINARY_DIR})
+if (NOT MSVC)
+  target_link_libraries(ddraw gdiplus d3d11 dxgi dxguid winmm xinput9_1_0 -Bsymbolic -static-libgcc -static-libstdc++)
+endif()
 install(TARGETS ddraw DESTINATION .)
 install(FILES ddraw.cfg nopowervr.txt DESTINATION .)
