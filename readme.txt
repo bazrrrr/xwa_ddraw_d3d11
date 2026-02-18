@@ -9,7 +9,7 @@ More info at xwaupgrade.com:
 http://www.xwaupgrade.com/phpBB3008/viewtopic.php?f=10&t=11167
 It also works with the other games from the series:
 X-Wing95, TIE95, X-Wing vs. TIE Fighter and Balance of Power
-
+-
 
 *** Requirements ***
 
