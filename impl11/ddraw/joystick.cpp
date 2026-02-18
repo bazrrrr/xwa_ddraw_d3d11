@@ -78,11 +78,16 @@ UINT WINAPI emulJoyGetNumDevs(void) {
 static UINT joyYmax, joyZmax;
 
 UINT WINAPI emulJoyGetDevCaps(UINT_PTR joy, struct tagJOYCAPSA *pjc, UINT size) {
-    if (!g_config.JoystickEmul) return joyGetPosEx(joy, pjc, size);
+    if (!g_config.JoystickEmul) {
+        // FIXED: Corrected function call from joyGetPosEx to joyGetDevCaps
+        return joyGetDevCaps(joy, pjc, size);
+    }
     if (joy != 0) return MMSYSERR_NODRIVER;
-    memset(pjc, 0, size);
-    pjc->wXmax = 512; pjc->wYmax = 512;
-    pjc->wNumButtons = 5; pjc->wNumAxes = 2;
+    if (pjc) {
+        memset(pjc, 0, size);
+        pjc->wXmax = 512; pjc->wYmax = 512;
+        pjc->wNumButtons = 5; pjc->wNumAxes = 2;
+    }
     return JOYERR_NOERROR;
 }
 
@@ -105,7 +110,6 @@ UINT WINAPI emulJoyGetPosEx(UINT joy, struct joyinfoex_tag *pji) {
     static int centerX = GetSystemMetrics(SM_CXSCREEN) / 2;
     static int centerY = GetSystemMetrics(SM_CYSCREEN) / 2;
 
-    // Safety snap ONLY if relative is active
     if (relativeActive && g_config.RelativeMouse && (now - lastGetPos) > 5000) {
         SetCursorPos(centerX, centerY);
     }
@@ -131,16 +135,18 @@ UINT WINAPI emulJoyGetPosEx(UINT joy, struct joyinfoex_tag *pji) {
     if (GetAsyncKeyState(VK_DOWN) & 0x8000)  mouseY = 256.0f + 256.0f * g_config.KbdSensitivity; 
     if (GetAsyncKeyState(VK_UP) & 0x8000)    mouseY = 256.0f - 256.0f * g_config.KbdSensitivity; 
 
-    pji->dwXpos = (DWORD)std::min(std::max(mouseX, 0.0f), 512.0f);
-    pji->dwYpos = (DWORD)std::min(std::max(mouseY, 0.0f), 512.0f);
+    if (pji) {
+        pji->dwXpos = (DWORD)std::min(std::max(mouseX, 0.0f), 512.0f);
+        pji->dwYpos = (DWORD)std::min(std::max(mouseY, 0.0f), 512.0f);
 
-    pji->dwButtons = 0;
-    pji->dwButtonNumber = 0;
-    if (GetAsyncKeyState(VK_LBUTTON)) { pji->dwButtons |= 1; pji->dwButtonNumber++; }
-    if (GetAsyncKeyState(VK_RBUTTON)) { pji->dwButtons |= 2; pji->dwButtonNumber++; }
-    if (GetAsyncKeyState(VK_MBUTTON)) { pji->dwButtons |= 4; pji->dwButtonNumber++; }
+        pji->dwButtons = 0;
+        pji->dwButtonNumber = 0;
+        if (GetAsyncKeyState(VK_LBUTTON)) { pji->dwButtons |= 1; pji->dwButtonNumber++; }
+        if (GetAsyncKeyState(VK_RBUTTON)) { pji->dwButtons |= 2; pji->dwButtonNumber++; }
+        if (GetAsyncKeyState(VK_MBUTTON)) { pji->dwButtons |= 4; pji->dwButtonNumber++; }
 
-    if (g_config.InvertYAxis) pji->dwYpos = 512 - pji->dwYpos;
+        if (g_config.InvertYAxis) pji->dwYpos = 512 - pji->dwYpos;
+    }
     
     return JOYERR_NOERROR;
 }
