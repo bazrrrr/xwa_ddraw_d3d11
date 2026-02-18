@@ -17,7 +17,7 @@
 #undef max
 #include <algorithm>
 
-// --- STUTTER-FREE KEY SENDING ---
+// --- HIGH PERFORMANCE KEY SENDING ---
 static void SendKey(WORD vKey) {
     INPUT inputs[2] = {};
     inputs[0].type = INPUT_KEYBOARD;
@@ -27,6 +27,10 @@ static void SendKey(WORD vKey) {
     inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
     SendInput(2, inputs, sizeof(INPUT));
 }
+
+// --- CACHED METRICS ---
+static int centerX = -1;
+static int centerY = -1;
 
 // --- CORE FUNCTIONS ---
 
@@ -55,8 +59,6 @@ UINT WINAPI emulJoyGetNumDevs(void) {
     return 1;
 }
 
-static UINT joyYmax, joyZmax;
-
 UINT WINAPI emulJoyGetDevCaps(UINT_PTR joy, struct tagJOYCAPSA *pjc, UINT size) {
     if (!g_config.JoystickEmul) return joyGetDevCaps(joy, pjc, size);
     if (joy != 0) return MMSYSERR_NODRIVER;
@@ -70,28 +72,16 @@ UINT WINAPI emulJoyGetDevCaps(UINT_PTR joy, struct tagJOYCAPSA *pjc, UINT size) 
 
 static DWORD lastGetPos;
 
-// --- FAST MOUSE WHEEL DETECTION (Non-Hook) ---
-static LRESULT CALLBACK MouseWheelSubclass(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
-    if (uMsg == WM_MOUSEWHEEL) {
-        short delta = GET_WHEEL_DELTA_WPARAM(wParam);
-        if (g_config.MouseScrollWheelBind > 0) {
-            WORD keyUp = 0, keyDown = 0;
-            switch (g_config.MouseScrollWheelBind) {
-                case 1: keyUp = VK_BACK; keyDown = 0xDB; break;
-                case 2: keyUp = VK_BACK; keyDown = VK_RETURN; break;
-                case 3: keyUp = 0x30;    keyDown = 0x39; break;
-            }
-            if (delta > 0 && keyUp != 0) SendKey(keyUp);
-            else if (delta < 0 && keyDown != 0) SendKey(keyDown);
-            return 0; // Handled
-        }
-    }
-    return DefWindowProc(hWnd, uMsg, wParam, lParam);
-}
-
 UINT WINAPI emulJoyGetPosEx(UINT joy, struct joyinfoex_tag *pji) {
     if (!g_config.JoystickEmul) return joyGetPosEx(joy, pji);
 
+    // Calculate center once to avoid GetSystemMetrics lag
+    if (centerX == -1) {
+        centerX = GetSystemMetrics(SM_CXSCREEN) / 2;
+        centerY = GetSystemMetrics(SM_CYSCREEN) / 2;
+    }
+
+    // Toggle Logic
     static bool relativeActive = true;
     static bool rCtrlWasDown = false;
     bool rCtrlDown = (GetAsyncKeyState(VK_RCONTROL) & 0x8000) != 0;
@@ -99,9 +89,6 @@ UINT WINAPI emulJoyGetPosEx(UINT joy, struct joyinfoex_tag *pji) {
     rCtrlWasDown = rCtrlDown;
 
     DWORD now = GetTickCount();
-    static int centerX = GetSystemMetrics(SM_CXSCREEN) / 2;
-    static int centerY = GetSystemMetrics(SM_CYSCREEN) / 2;
-
     if (relativeActive && g_config.RelativeMouse && (now - lastGetPos) > 5000) {
         SetCursorPos(centerX, centerY);
     }
@@ -113,6 +100,7 @@ UINT WINAPI emulJoyGetPosEx(UINT joy, struct joyinfoex_tag *pji) {
     float mouseX = 256.0f;
     float mouseY = 256.0f;
 
+    // Movement Logic
     if (g_config.RelativeMouse && relativeActive) {
         mouseX = 256.0f + (pos.x - (float)centerX) * g_config.MouseSensitivity;
         mouseY = 256.0f + (pos.y - (float)centerY) * g_config.MouseSensitivity;
@@ -122,6 +110,7 @@ UINT WINAPI emulJoyGetPosEx(UINT joy, struct joyinfoex_tag *pji) {
         mouseY = 256.0f + (pos.y - (float)centerY) * g_config.MouseSensitivity;
     }
 
+    // Instant Keyboard Overrides
     if (GetAsyncKeyState(VK_LEFT) & 0x8000)  mouseX = 256.0f - 256.0f * g_config.KbdSensitivity;
     if (GetAsyncKeyState(VK_RIGHT) & 0x8000) mouseX = 256.0f + 256.0f * g_config.KbdSensitivity;
     if (GetAsyncKeyState(VK_DOWN) & 0x8000)  mouseY = 256.0f + 256.0f * g_config.KbdSensitivity; 
