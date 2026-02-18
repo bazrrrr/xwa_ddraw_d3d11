@@ -1,4 +1,4 @@
-// Copyright (c) 2014 Jérémy Ansel
+// Copyright (c) 2014 JÃ©rÃ©my Ansel
 // Licensed under the MIT license. See LICENSE.txt
 
 #include "config.h"
@@ -39,6 +39,7 @@ Config::Config()
 {
 	this->AspectRatioPreserved = true;
 	this->RemapMouse = false;
+	this->RelativeMouse = false;
 	this->MultisamplingAntialiasingEnabled = false;
 	this->AnisotropicFilteringEnabled = true;
 	this->GenerateMipMaps = -1;
@@ -131,6 +132,10 @@ Config::Config()
 			else if (name == "RemapMouse")
 			{
 				this->RemapMouse = stoi(value) != 0;
+			}
+			else if (name == "RelativeMouse")
+			{
+				this->RelativeMouse = stoi(value) != 0;
 			}
 			else if (name == "EnableMultisamplingAntialiasing")
 			{
