@@ -33,6 +33,26 @@ static void SendKey(WORD vKey) {
 static int centerX = -1;
 static int centerY = -1;
 
+// --- MOUSE WHEEL HOOK ---
+static HHOOK hMouseHook = NULL;
+LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) {
+    if (nCode == HC_ACTION && wParam == WM_MOUSEWHEEL) {
+        MSLLHOOKSTRUCT* pMouseStruct = (MSLLHOOKSTRUCT*)lParam;
+        short wheelDelta = HIWORD(pMouseStruct->mouseData);
+        if (g_config.MouseScrollWheelBind > 0) {
+            WORD keyUp = 0, keyDown = 0;
+            switch (g_config.MouseScrollWheelBind) {
+                case 1: keyUp = VK_BACK; keyDown = 0xDB; break; // BS / [
+                case 2: keyUp = VK_BACK; keyDown = VK_RETURN; break; // BS / Enter
+                case 3: keyUp = 0x30;    keyDown = 0x39; break; // 0 / 9
+            }
+            if (wheelDelta > 0) SendKey(keyUp);
+            else if (wheelDelta < 0) SendKey(keyDown);
+        }
+    }
+    return CallNextHookEx(hMouseHook, nCode, wParam, lParam);
+}
+
 // --- CORE FUNCTIONS ---
 
 DWORD emulGetTime() {
@@ -73,40 +93,19 @@ UINT WINAPI emulJoyGetDevCaps(UINT_PTR joy, struct tagJOYCAPSA *pjc, UINT size) 
 
 static DWORD lastGetPos;
 
-// --- MOUSE WHEEL HOOK (Re-added but optimized for no lag) ---
-static HHOOK hMouseHook = NULL;
-LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) {
-    if (nCode == HC_ACTION && wParam == WM_MOUSEWHEEL) {
-        MSLLHOOKSTRUCT* pMouseStruct = (MSLLHOOKSTRUCT*)lParam;
-        short wheelDelta = HIWORD(pMouseStruct->mouseData);
-        if (g_config.MouseScrollWheelBind > 0) {
-            WORD keyUp = 0, keyDown = 0;
-            switch (g_config.MouseScrollWheelBind) {
-                case 1: keyUp = VK_BACK; keyDown = 0xDB; break; // BS / [
-                case 2: keyUp = VK_BACK; keyDown = VK_RETURN; break; // BS / Enter
-                case 3: keyUp = 0x30;    keyDown = 0x39; break; // 0 / 9
-            }
-            if (wheelDelta > 0) SendKey(keyUp);
-            else if (wheelDelta < 0) SendKey(keyDown);
-        }
-    }
-    return CallNextHookEx(hMouseHook, nCode, wParam, lParam);
-}
-
 UINT WINAPI emulJoyGetPosEx(UINT joy, struct joyinfoex_tag *pji) {
     if (!g_config.JoystickEmul) return joyGetPosEx(joy, pji);
 
     if (centerX == -1) {
         centerX = GetSystemMetrics(SM_CXSCREEN) / 2;
         centerY = GetSystemMetrics(SM_CYSCREEN) / 2;
-        // Start Wheel Hook only if bind is used
         if (g_config.MouseScrollWheelBind > 0 && hMouseHook == NULL) {
             hMouseHook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, GetModuleHandle(NULL), 0);
         }
     }
 
-    // --- TOGGLE LOGIC (Starts OFF) ---
-    static bool relativeActive = false; // Starts as FALSE
+    // Toggle Logic (Starts OFF)
+    static bool relativeActive = false; 
     static bool rCtrlWasDown = false;
     bool rCtrlDown = (GetAsyncKeyState(VK_RCONTROL) & 0x8000) != 0;
     if (rCtrlDown && !rCtrlWasDown) relativeActive = !relativeActive;
@@ -121,18 +120,29 @@ UINT WINAPI emulJoyGetPosEx(UINT joy, struct joyinfoex_tag *pji) {
     POINT pos;
     GetCursorPos(&pos);
 
+    // Initialise at virtual joystick centre
     float mouseX = 256.0f;
     float mouseY = 256.0f;
 
+    // Linear Stable Scaling
     if (g_config.RelativeMouse && relativeActive) {
-        mouseX = 256.0f + (pos.x - (float)centerX) * g_config.MouseSensitivity;
-        mouseY = 256.0f + (pos.y - (float)centerY) * g_config.MouseSensitivity;
+        // Calculate the raw delta from screen centre
+        float deltaX = (float)pos.x - (float)centerX;
+        float deltaY = (float)pos.y - (float)centerY;
+
+        // Apply linear scaling based on Sensitivity config
+        mouseX = 256.0f + (deltaX * g_config.MouseSensitivity);
+        mouseY = 256.0f + (deltaY * g_config.MouseSensitivity);
+
+        // Warp back to maintain relative delta measurement
         SetCursorPos(centerX, centerY);
     } else {
+        // Standard Absolute Logic for Menus
         mouseX = 256.0f + (pos.x - (float)centerX) * g_config.MouseSensitivity;
         mouseY = 256.0f + (pos.y - (float)centerY) * g_config.MouseSensitivity;
     }
 
+    // Instant Keyboard Overrides
     if (GetAsyncKeyState(VK_LEFT) & 0x8000)  mouseX = 256.0f - 256.0f * g_config.KbdSensitivity;
     if (GetAsyncKeyState(VK_RIGHT) & 0x8000) mouseX = 256.0f + 256.0f * g_config.KbdSensitivity;
     if (GetAsyncKeyState(VK_DOWN) & 0x8000)  mouseY = 256.0f + 256.0f * g_config.KbdSensitivity; 
@@ -141,10 +151,12 @@ UINT WINAPI emulJoyGetPosEx(UINT joy, struct joyinfoex_tag *pji) {
     if (pji) {
         pji->dwXpos = (DWORD)std::min(std::max(mouseX, 0.0f), 512.0f);
         pji->dwYpos = (DWORD)std::min(std::max(mouseY, 0.0f), 512.0f);
+        
         pji->dwButtons = 0;
         if (GetAsyncKeyState(VK_LBUTTON)) pji->dwButtons |= 1;
         if (GetAsyncKeyState(VK_RBUTTON)) pji->dwButtons |= 2;
         if (GetAsyncKeyState(VK_MBUTTON)) pji->dwButtons |= 4;
+        
         if (g_config.InvertYAxis) pji->dwYpos = 512 - pji->dwYpos;
     }
     return JOYERR_NOERROR;
