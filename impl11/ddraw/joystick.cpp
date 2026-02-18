@@ -12,7 +12,6 @@
 
 #pragma comment(lib, "winmm")
 #pragma comment(lib, "XInput9_1_0")
-#pragma comment(lib, "user32.lib")
 
 #undef min
 #undef max
@@ -106,7 +105,7 @@ UINT WINAPI emulJoyGetPosEx(UINT joy, struct joyinfoex_tag *pji) {
     static int centerX = GetSystemMetrics(SM_CXSCREEN) / 2;
     static int centerY = GetSystemMetrics(SM_CYSCREEN) / 2;
 
-    // FIX: Only perform the safety "snap-to-center" if relative mode is active
+    // Safety snap ONLY if relative is active
     if (relativeActive && g_config.RelativeMouse && (now - lastGetPos) > 5000) {
         SetCursorPos(centerX, centerY);
     }
@@ -123,12 +122,10 @@ UINT WINAPI emulJoyGetPosEx(UINT joy, struct joyinfoex_tag *pji) {
         mouseY = 256.0f + (pos.y - (float)centerY) * g_config.MouseSensitivity;
         SetCursorPos(centerX, centerY);
     } else {
-        // Absolute Mode (Menus): No SetCursorPos here!
         mouseX = 256.0f + (pos.x - (float)centerX) * g_config.MouseSensitivity;
         mouseY = 256.0f + (pos.y - (float)centerY) * g_config.MouseSensitivity;
     }
 
-    // Keyboard Overrides (Up/Down/Left/Right arrows)
     if (GetAsyncKeyState(VK_LEFT) & 0x8000)  mouseX = 256.0f - 256.0f * g_config.KbdSensitivity;
     if (GetAsyncKeyState(VK_RIGHT) & 0x8000) mouseX = 256.0f + 256.0f * g_config.KbdSensitivity;
     if (GetAsyncKeyState(VK_DOWN) & 0x8000)  mouseY = 256.0f + 256.0f * g_config.KbdSensitivity; 
