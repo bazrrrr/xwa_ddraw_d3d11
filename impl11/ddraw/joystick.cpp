@@ -12,6 +12,7 @@
 
 #pragma comment(lib, "winmm")
 #pragma comment(lib, "XInput9_1_0")
+#pragma comment(lib, "user32.lib")
 
 #undef min
 #undef max
@@ -41,8 +42,8 @@ LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) {
                 case 2: keyUp = VK_BACK; keyDown = VK_RETURN; break; // Backspace / Enter
                 case 3: keyUp = 0x30;    keyDown = 0x39; break; // 0 / 9
             }
-            if (wheelDelta > 0) SendKey(keyUp);
-            else if (wheelDelta < 0) SendKey(keyDown);
+            if (wheelDelta > 0 && keyUp != 0) SendKey(keyUp);
+            else if (wheelDelta < 0 && keyDown != 0) SendKey(keyDown);
         }
     }
     return CallNextHookEx(hMouseHook, nCode, wParam, lParam);
@@ -78,7 +79,7 @@ UINT WINAPI emulJoyGetNumDevs(void) {
 static UINT joyYmax, joyZmax;
 
 UINT WINAPI emulJoyGetDevCaps(UINT_PTR joy, struct tagJOYCAPSA *pjc, UINT size) {
-    if (!g_config.JoystickEmul) return joyGetDevCaps(joy, pjc, size);
+    if (!g_config.JoystickEmul) return joyGetPosEx(joy, pjc, size);
     if (joy != 0) return MMSYSERR_NODRIVER;
     memset(pjc, 0, size);
     pjc->wXmax = 512; pjc->wYmax = 512;
@@ -91,12 +92,10 @@ static DWORD lastGetPos;
 UINT WINAPI emulJoyGetPosEx(UINT joy, struct joyinfoex_tag *pji) {
     if (!g_config.JoystickEmul) return joyGetPosEx(joy, pji);
 
-    // --- INITIALIZE HOOK ONCE ---
     if (hMouseHook == NULL && g_config.MouseScrollWheelBind > 0) {
         hMouseHook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, GetModuleHandle(NULL), 0);
     }
 
-    // --- TOGGLE LOGIC (Right Ctrl) ---
     static bool relativeActive = true;
     static bool rCtrlWasDown = false;
     bool rCtrlDown = (GetAsyncKeyState(VK_RCONTROL) & 0x8000) != 0;
@@ -104,29 +103,39 @@ UINT WINAPI emulJoyGetPosEx(UINT joy, struct joyinfoex_tag *pji) {
     rCtrlWasDown = rCtrlDown;
 
     DWORD now = GetTickCount();
-    int centerX = GetSystemMetrics(SM_CXSCREEN) / 2;
-    int centerY = GetSystemMetrics(SM_CYSCREEN) / 2;
+    static int centerX = GetSystemMetrics(SM_CXSCREEN) / 2;
+    static int centerY = GetSystemMetrics(SM_CYSCREEN) / 2;
 
-    if ((now - lastGetPos) > 5000) {
+    // FIX: Only perform the safety "snap-to-center" if relative mode is active
+    if (relativeActive && g_config.RelativeMouse && (now - lastGetPos) > 5000) {
         SetCursorPos(centerX, centerY);
-        lastGetPos = now;
     }
+    lastGetPos = now;
 
     POINT pos;
     GetCursorPos(&pos);
 
+    float mouseX = 256.0f;
+    float mouseY = 256.0f;
+
     if (g_config.RelativeMouse && relativeActive) {
-        float deltaX = (pos.x - (float)centerX) * g_config.MouseSensitivity;
-        float deltaY = (pos.y - (float)centerY) * g_config.MouseSensitivity;
-
-        pji->dwXpos = static_cast<DWORD>(std::min(std::max(256.0f + deltaX, 0.0f), 512.0f));
-        pji->dwYpos = static_cast<DWORD>(std::min(std::max(256.0f + deltaY, 0.0f), 512.0f));
-
+        mouseX = 256.0f + (pos.x - (float)centerX) * g_config.MouseSensitivity;
+        mouseY = 256.0f + (pos.y - (float)centerY) * g_config.MouseSensitivity;
         SetCursorPos(centerX, centerY);
     } else {
-        pji->dwXpos = static_cast<DWORD>(std::min(std::max(256.0f + (pos.x - (float)centerX) * g_config.MouseSensitivity, 0.0f), 512.0f));
-        pji->dwYpos = static_cast<DWORD>(std::min(std::max(256.0f + (pos.y - (float)centerY) * g_config.MouseSensitivity, 0.0f), 512.0f));
+        // Absolute Mode (Menus): No SetCursorPos here!
+        mouseX = 256.0f + (pos.x - (float)centerX) * g_config.MouseSensitivity;
+        mouseY = 256.0f + (pos.y - (float)centerY) * g_config.MouseSensitivity;
     }
+
+    // Keyboard Overrides (Up/Down/Left/Right arrows)
+    if (GetAsyncKeyState(VK_LEFT) & 0x8000)  mouseX = 256.0f - 256.0f * g_config.KbdSensitivity;
+    if (GetAsyncKeyState(VK_RIGHT) & 0x8000) mouseX = 256.0f + 256.0f * g_config.KbdSensitivity;
+    if (GetAsyncKeyState(VK_DOWN) & 0x8000)  mouseY = 256.0f + 256.0f * g_config.KbdSensitivity; 
+    if (GetAsyncKeyState(VK_UP) & 0x8000)    mouseY = 256.0f - 256.0f * g_config.KbdSensitivity; 
+
+    pji->dwXpos = (DWORD)std::min(std::max(mouseX, 0.0f), 512.0f);
+    pji->dwYpos = (DWORD)std::min(std::max(mouseY, 0.0f), 512.0f);
 
     pji->dwButtons = 0;
     pji->dwButtonNumber = 0;
@@ -135,5 +144,6 @@ UINT WINAPI emulJoyGetPosEx(UINT joy, struct joyinfoex_tag *pji) {
     if (GetAsyncKeyState(VK_MBUTTON)) { pji->dwButtons |= 4; pji->dwButtonNumber++; }
 
     if (g_config.InvertYAxis) pji->dwYpos = 512 - pji->dwYpos;
+    
     return JOYERR_NOERROR;
 }
