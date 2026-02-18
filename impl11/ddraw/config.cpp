@@ -40,6 +40,7 @@ Config::Config()
 	this->AspectRatioPreserved = true;
 	this->RemapMouse = false;
 	this->RelativeMouse = false;
+	this->MouseScrollWheelBind = 0;
 	this->MultisamplingAntialiasingEnabled = false;
 	this->AnisotropicFilteringEnabled = true;
 	this->GenerateMipMaps = -1;
@@ -136,6 +137,10 @@ Config::Config()
 			else if (name == "RelativeMouse")
 			{
 				this->RelativeMouse = stoi(value) != 0;
+			}
+			else if (name == "MouseScrollWheelBind")
+			{
+				this->MouseScrollWheelBind = stoi(value);
 			}
 			else if (name == "EnableMultisamplingAntialiasing")
 			{
