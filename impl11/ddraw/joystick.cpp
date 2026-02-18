@@ -17,35 +17,15 @@
 #undef max
 #include <algorithm>
 
-// --- MOUSE WHEEL HOOK LOGIC ---
-static HHOOK hMouseHook = NULL;
-
-void SendKey(WORD vKey) {
-    INPUT input = { 0 };
-    input.type = INPUT_KEYBOARD;
-    input.ki.wVk = vKey;
-    SendInput(1, &input, sizeof(INPUT));
-    input.ki.dwFlags = KEYEVENTF_KEYUP;
-    SendInput(1, &input, sizeof(INPUT));
-}
-
-LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) {
-    if (nCode == HC_ACTION && wParam == WM_MOUSEWHEEL) {
-        MSLLHOOKSTRUCT* pMouseStruct = (MSLLHOOKSTRUCT*)lParam;
-        short wheelDelta = HIWORD(pMouseStruct->mouseData);
-
-        if (g_config.MouseScrollWheelBind > 0) {
-            WORD keyUp = 0, keyDown = 0;
-            switch (g_config.MouseScrollWheelBind) {
-                case 1: keyUp = VK_BACK; keyDown = 0xDB; break; // Backspace / [
-                case 2: keyUp = VK_BACK; keyDown = VK_RETURN; break; // Backspace / Enter
-                case 3: keyUp = 0x30;    keyDown = 0x39; break; // 0 / 9
-            }
-            if (wheelDelta > 0 && keyUp != 0) SendKey(keyUp);
-            else if (wheelDelta < 0 && keyDown != 0) SendKey(keyDown);
-        }
-    }
-    return CallNextHookEx(hMouseHook, nCode, wParam, lParam);
+// --- STUTTER-FREE KEY SENDING ---
+static void SendKey(WORD vKey) {
+    INPUT inputs[2] = {};
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = vKey;
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = vKey;
+    inputs[1].ki.dwFlags = KEYEVENTF_KEYUP;
+    SendInput(2, inputs, sizeof(INPUT));
 }
 
 // --- CORE FUNCTIONS ---
@@ -78,10 +58,7 @@ UINT WINAPI emulJoyGetNumDevs(void) {
 static UINT joyYmax, joyZmax;
 
 UINT WINAPI emulJoyGetDevCaps(UINT_PTR joy, struct tagJOYCAPSA *pjc, UINT size) {
-    if (!g_config.JoystickEmul) {
-        // FIXED: Corrected function call from joyGetPosEx to joyGetDevCaps
-        return joyGetDevCaps(joy, pjc, size);
-    }
+    if (!g_config.JoystickEmul) return joyGetDevCaps(joy, pjc, size);
     if (joy != 0) return MMSYSERR_NODRIVER;
     if (pjc) {
         memset(pjc, 0, size);
@@ -93,12 +70,27 @@ UINT WINAPI emulJoyGetDevCaps(UINT_PTR joy, struct tagJOYCAPSA *pjc, UINT size) 
 
 static DWORD lastGetPos;
 
+// --- FAST MOUSE WHEEL DETECTION (Non-Hook) ---
+static LRESULT CALLBACK MouseWheelSubclass(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
+    if (uMsg == WM_MOUSEWHEEL) {
+        short delta = GET_WHEEL_DELTA_WPARAM(wParam);
+        if (g_config.MouseScrollWheelBind > 0) {
+            WORD keyUp = 0, keyDown = 0;
+            switch (g_config.MouseScrollWheelBind) {
+                case 1: keyUp = VK_BACK; keyDown = 0xDB; break;
+                case 2: keyUp = VK_BACK; keyDown = VK_RETURN; break;
+                case 3: keyUp = 0x30;    keyDown = 0x39; break;
+            }
+            if (delta > 0 && keyUp != 0) SendKey(keyUp);
+            else if (delta < 0 && keyDown != 0) SendKey(keyDown);
+            return 0; // Handled
+        }
+    }
+    return DefWindowProc(hWnd, uMsg, wParam, lParam);
+}
+
 UINT WINAPI emulJoyGetPosEx(UINT joy, struct joyinfoex_tag *pji) {
     if (!g_config.JoystickEmul) return joyGetPosEx(joy, pji);
-
-    if (hMouseHook == NULL && g_config.MouseScrollWheelBind > 0) {
-        hMouseHook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, GetModuleHandle(NULL), 0);
-    }
 
     static bool relativeActive = true;
     static bool rCtrlWasDown = false;
@@ -138,15 +130,11 @@ UINT WINAPI emulJoyGetPosEx(UINT joy, struct joyinfoex_tag *pji) {
     if (pji) {
         pji->dwXpos = (DWORD)std::min(std::max(mouseX, 0.0f), 512.0f);
         pji->dwYpos = (DWORD)std::min(std::max(mouseY, 0.0f), 512.0f);
-
         pji->dwButtons = 0;
-        pji->dwButtonNumber = 0;
-        if (GetAsyncKeyState(VK_LBUTTON)) { pji->dwButtons |= 1; pji->dwButtonNumber++; }
-        if (GetAsyncKeyState(VK_RBUTTON)) { pji->dwButtons |= 2; pji->dwButtonNumber++; }
-        if (GetAsyncKeyState(VK_MBUTTON)) { pji->dwButtons |= 4; pji->dwButtonNumber++; }
-
+        if (GetAsyncKeyState(VK_LBUTTON)) pji->dwButtons |= 1;
+        if (GetAsyncKeyState(VK_RBUTTON)) pji->dwButtons |= 2;
+        if (GetAsyncKeyState(VK_MBUTTON)) pji->dwButtons |= 4;
         if (g_config.InvertYAxis) pji->dwYpos = 512 - pji->dwYpos;
     }
-    
     return JOYERR_NOERROR;
 }
