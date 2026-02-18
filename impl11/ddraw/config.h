@@ -1,4 +1,4 @@
-// Copyright (c) 2014 Jérémy Ansel
+// Copyright (c) 2014 JÃ©rÃ©my Ansel
 // Licensed under the MIT license. See LICENSE.txt
 
 #pragma once
@@ -15,6 +15,7 @@ public:
 
 	bool AspectRatioPreserved;
 	bool RemapMouse;
+	bool RelativeMouse;
 	bool MultisamplingAntialiasingEnabled;
 	bool AnisotropicFilteringEnabled;
 	int GenerateMipMaps;
