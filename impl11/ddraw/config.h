@@ -16,6 +16,7 @@ public:
 	bool AspectRatioPreserved;
 	bool RemapMouse;
 	bool RelativeMouse;
+	int MouseScrollWheelBind;
 	bool MultisamplingAntialiasingEnabled;
 	bool AnisotropicFilteringEnabled;
 	int GenerateMipMaps;
