@@ -12,6 +12,7 @@
 
 #pragma comment(lib, "winmm")
 #pragma comment(lib, "XInput9_1_0")
+#pragma comment(lib, "user32.lib")
 
 #undef min
 #undef max
@@ -41,8 +42,8 @@ LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) {
                 case 2: keyUp = VK_BACK; keyDown = VK_RETURN; break; // Backspace / Enter
                 case 3: keyUp = 0x30;    keyDown = 0x39; break; // 0 / 9
             }
-            if (wheelDelta > 0) SendKey(keyUp);
-            else if (wheelDelta < 0) SendKey(keyDown);
+            if (wheelDelta > 0 && keyUp != 0) SendKey(keyUp);
+            else if (wheelDelta < 0 && keyDown != 0) SendKey(keyDown);
         }
     }
     return CallNextHookEx(hMouseHook, nCode, wParam, lParam);
@@ -91,7 +92,7 @@ static DWORD lastGetPos;
 UINT WINAPI emulJoyGetPosEx(UINT joy, struct joyinfoex_tag *pji) {
     if (!g_config.JoystickEmul) return joyGetPosEx(joy, pji);
 
-    // Initialise Wheel Hook once
+    // Initialise Wheel Hook once if binding is set
     if (hMouseHook == NULL && g_config.MouseScrollWheelBind > 0) {
         hMouseHook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, GetModuleHandle(NULL), 0);
     }
@@ -117,7 +118,7 @@ UINT WINAPI emulJoyGetPosEx(UINT joy, struct joyinfoex_tag *pji) {
     POINT pos;
     GetCursorPos(&pos);
 
-    // Base joystick values
+    // Base joystick values (256.0 is centered)
     float mouseX = 256.0f;
     float mouseY = 256.0f;
 
@@ -134,12 +135,12 @@ UINT WINAPI emulJoyGetPosEx(UINT joy, struct joyinfoex_tag *pji) {
     // Keyboard Overrides (Instant Turn)
     if (GetAsyncKeyState(VK_LEFT) & 0x8000)  mouseX = 256.0f - 256.0f * g_config.KbdSensitivity;
     if (GetAsyncKeyState(VK_RIGHT) & 0x8000) mouseX = 256.0f + 256.0f * g_config.KbdSensitivity;
-    if (GetAsyncKeyState(VK_DOWN) & 0x8000)  mouseY = 256.0f + 256.0f * g_config.KbdSensitivity; // Corrected: Down is +Y in 0-512 scale
-    if (GetAsyncKeyState(VK_UP) & 0x8000)    mouseY = 256.0f - 256.0f * g_config.KbdSensitivity; // Corrected: Up is -Y in 0-512 scale
+    if (GetAsyncKeyState(VK_DOWN) & 0x8000)  mouseY = 256.0f + 256.0f * g_config.KbdSensitivity; 
+    if (GetAsyncKeyState(VK_UP) & 0x8000)    mouseY = 256.0f - 256.0f * g_config.KbdSensitivity; 
 
-    // Final clamp and assignment
-    pji->dwXpos = static_cast<DWORD>(std::min(std::max(mouseX, 0.0f), 512.0f));
-    pji->dwYpos = static_cast<DWORD>(std::min(std::max(mouseY, 0.0f), 512.0f));
+    // Final clamp using min/max for compatibility
+    pji->dwXpos = (DWORD)std::min(std::max(mouseX, 0.0f), 512.0f);
+    pji->dwYpos = (DWORD)std::min(std::max(mouseY, 0.0f), 512.0f);
 
     // Buttons
     pji->dwButtons = 0;
@@ -148,7 +149,7 @@ UINT WINAPI emulJoyGetPosEx(UINT joy, struct joyinfoex_tag *pji) {
     if (GetAsyncKeyState(VK_RBUTTON)) { pji->dwButtons |= 2; pji->dwButtonNumber++; }
     if (GetAsyncKeyState(VK_MBUTTON)) { pji->dwButtons |= 4; pji->dwButtonNumber++; }
 
-    // Final Y-Inversion (if applicable)
+    // Final Y-Inversion
     if (g_config.InvertYAxis) pji->dwYpos = 512 - pji->dwYpos;
     
     return JOYERR_NOERROR;
